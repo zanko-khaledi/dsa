@@ -15,10 +15,6 @@ func logger(next http.Handler) http.Handler {
 	})
 }
 
-type Client struct {
-	Requests []time.Time
-}
-
 type User struct {
 	Id   int
 	Name string
