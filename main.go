@@ -1,54 +1,35 @@
 package main
 
 import (
-	"encoding/json"
-	"log"
-	"net/http"
-	"time"
+	"fmt"
 	"zanko-khaledi/dsa/algorithmes"
 )
 
-func logger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("[%v] %s", r.Method, r.URL.Path)
-		next.ServeHTTP(w, r)
-	})
-}
-
-type User struct {
-	Id   int
-	Name string
-}
+type Edge = algorithmes.Edge
 
 func main() {
 
-	mux := http.NewServeMux()
-
-	ratelimiterConf := &algorithmes.RatelimterConfig{
-		Limit:    3,
-		Window:   time.Second,
-		Duration: 1,
+	graph := map[string][]Edge{
+		"A": {
+			{To: "B", Weight: 4},
+			{To: "C", Weight: 1},
+			{To: "D", Weight: 2},
+		},
+		"B": {
+			{To: "E", Weight: 5},
+		},
+		"C": {
+			{To: "D", Weight: 1},
+		},
+		"D": {
+			{To: "E", Weight: 3},
+		},
+		"E": {},
 	}
 
-	handler := logger(ratelimiterConf.Ratelimiter(mux))
+	cost, path := algorithmes.DijkestraWithHeap(graph, "A")
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
-			data := []User{
-				{
-					Id:   1,
-					Name: "zanko",
-				},
-			}
-
-			b, _ := json.Marshal(data)
-
-			w.WriteHeader(200)
-			w.Write(b)
-		}
-	})
-
-	if err := http.ListenAndServe(":8080", handler); err != nil {
-		log.Fatal(err)
-	}
+	fmt.Println(cost)
+	fmt.Println(path)
+	fmt.Println(algorithmes.BuildPath(path, "A", "E"))
 }
