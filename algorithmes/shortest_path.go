@@ -17,13 +17,15 @@ type Item struct {
 
 type PriorityQueue []Item
 
-func Dijkestra(graph map[string][]Edge, start string) map[string]int {
+func Dijkestra(graph map[string][]Edge, start string) (map[string]int, map[string]string) {
 
 	dist := make(map[string]int, len(graph))
 	visited := make(map[string]bool)
+	prev := make(map[string]string)
 
 	for node := range graph {
 		dist[node] = math.MaxInt
+		prev[node] = ""
 	}
 
 	dist[start] = 0
@@ -52,11 +54,12 @@ func Dijkestra(graph map[string][]Edge, start string) map[string]int {
 
 			if newDist < dist[edge.To] {
 				dist[edge.To] = newDist
+				prev[edge.To] = minNode
 			}
 		}
 	}
 
-	return dist
+	return dist, prev
 }
 
 /* Heap methods intialazing */
@@ -87,12 +90,14 @@ func (pq *PriorityQueue) Pop() any {
 	return item
 }
 
-func DijkestraWithHeap(graph map[string][]Edge, start string) map[string]int {
+func DijkestraWithHeap(graph map[string][]Edge, start string) (map[string]int, map[string]string) {
 
-	dist := make(map[string]int, len(graph))
+	dist := make(map[string]int)
+	prev := make(map[string]string)
 
 	for node := range graph {
 		dist[node] = math.MaxInt
+		prev[node] = ""
 	}
 
 	dist[start] = 0
@@ -123,9 +128,38 @@ func DijkestraWithHeap(graph map[string][]Edge, start string) map[string]int {
 					Node: edge.To,
 					Dist: newDist,
 				})
+
+				prev[edge.To] = current.Node
 			}
 		}
 	}
 
-	return dist
+	return dist, prev
+}
+
+func BuildPath(edges map[string]string, start string, end string) []string {
+	path := []string{}
+
+	current := end
+
+	for current != "" {
+
+		path = append(path, current)
+
+		if current == start {
+			break
+		}
+
+		current = edges[current]
+	}
+
+	i, j := 0, len(path)-1
+
+	for i <= j {
+		path[i], path[j] = path[j], path[i]
+		i++
+		j--
+	}
+
+	return path
 }
